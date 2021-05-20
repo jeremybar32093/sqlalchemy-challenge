@@ -45,6 +45,35 @@ def welcome():
         f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br/>"
     )
 
+# precipitation route
+@app.route("/api/v1.0/precipitation")
+def precipitation():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of all precipitation measurements taken on each date"""
+    # Query all stations
+    results = session.query(Measurement.date,Measurement.prcp).all()
+
+    session.close()
+
+    # Create a dictionary from the row data and append to a list of all_stations
+    precip_dict = {}
+    for date, prcp in results:        
+        # Check if date key is already in dict
+        # If so, append to corresponding list of precipitation measurements
+        # If not, add key into dictionary and add precipitation value into list
+        if date in precip_dict:
+            # Append precipitation measure to existing key-value pair
+            precip_dict[date].append(prcp)
+        else:
+            # Add precipitation measure into precipitation measure list
+            precip_measure_list = []
+            precip_measure_list.append(prcp)
+            precip_dict[date] = precip_measure_list
+
+    return jsonify(precip_dict)
+
 # stations route
 @app.route("/api/v1.0/stations")
 def stations():
