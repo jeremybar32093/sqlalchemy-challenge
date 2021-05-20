@@ -108,8 +108,7 @@ def tobs():
 # start route
 @app.route("/api/v1.0/<start>")
 def return_summary_temp_start(start):
-    """Returns the minimum, maximum, and average temperatures for all dates after start date provided.
-       If start date is not found, page will return error message/404."""
+    """Returns the minimum, maximum, and average temperatures for all dates after start date provided."""
 
     # Create our session (link) from Python to the DB
     session = Session(engine)
@@ -120,6 +119,29 @@ def return_summary_temp_start(start):
     temp_dict["min_temp"] = results[0][0]
     temp_dict["max_temp"] = results[0][1]
     temp_dict["avg_temp"] = results[0][2]
+
+    session.close()
+
+    return jsonify(temp_dict)
+
+# start/end route
+@app.route("/api/v1.0/<start>/<end>")
+def return_summary_temp_start_end(start,end):
+    """Returns the minimum, maximum, and average temperatures for all dates between the start and end date provided (inclusive)."""
+
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    # Return the min, max, and average temperatures for temperatures past the start date
+    results = session.query(func.min(Measurement.tobs),func.max(Measurement.tobs),func.avg(Measurement.tobs)).\
+              filter(Measurement.date >= start).\
+              filter(Measurement.date <= end)
+    temp_dict = {}
+    temp_dict["tmin"] = results[0][0]
+    temp_dict["tmax"] = results[0][1]
+    temp_dict["tavg"] = results[0][2]
+
+    session.close()
 
     return jsonify(temp_dict)
 
