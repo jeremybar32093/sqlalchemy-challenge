@@ -32,6 +32,7 @@ app = Flask(__name__)
 # Flask Routes
 #################################################
 
+# base/index root
 @app.route("/")
 def welcome():
     """List all available api routes."""
@@ -44,6 +45,7 @@ def welcome():
         f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br/>"
     )
 
+# stations route
 @app.route("/api/v1.0/stations")
 def stations():
     # Create our session (link) from Python to the DB
@@ -65,6 +67,7 @@ def stations():
 
     return jsonify(all_stations)
 
+# tobs route
 @app.route("/api/v1.0/tobs")
 def tobs():
     # Create our session (link) from Python to the DB
@@ -91,7 +94,7 @@ def tobs():
 
     session.close()
 
-    # Create a dictionary from the row data and append to a list of all_stations
+    # Create a dictionary from the row data and append to a list 
     most_active_station_temps = []
     for station, date, tobs in results:
         temp_dict = {}
@@ -101,6 +104,24 @@ def tobs():
         most_active_station_temps.append(temp_dict)
 
     return jsonify(most_active_station_temps)
+
+# start route
+@app.route("/api/v1.0/<start>")
+def return_summary_temp_start(start):
+    """Returns the minimum, maximum, and average temperatures for all dates after start date provided.
+       If start date is not found, page will return error message/404."""
+
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    # Return the min, max, and average temperatures for temperatures past the start date
+    results = session.query(func.min(Measurement.tobs),func.max(Measurement.tobs),func.avg(Measurement.tobs)).filter(Measurement.date >= start)
+    temp_dict = {}
+    temp_dict["min_temp"] = results[0][0]
+    temp_dict["max_temp"] = results[0][1]
+    temp_dict["avg_temp"] = results[0][2]
+
+    return jsonify(temp_dict)
 
 
 #################################################
